@@ -1,0 +1,194 @@
+    {% extends 'dashboard/base.html' %}
+    {% load static %}
+    {% load custom_filters %}
+    {% block content %}
+
+    <style>
+        .order-container {
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            margin-top: 20px;
+            position: relative; /* Ensure the container is positioned relative */
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .cancel-order-btn {
+            background-color: #088178;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-left: auto; /* Push the cancel button to the right */
+        }
+
+        .back-to-shop {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #088178;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="container order-container">
+        <h3>Order Details</h3>
+        <table class="order-table">
+            <tr>
+                <th>Order ID</th>
+                <td>{{ order.id }}</td>
+            </tr>
+            <tr>
+                <th>Shipping Address</th>
+                <td>
+                    {{ order.order_address }} {{ order.selected_address.city }}, 
+                    {{ order.selected_address.state }}, {{ order.selected_address.country }} P.O - {{ order.selected_address.postal_code }}
+                </td>
+            </tr>
+            <tr>
+                <th>Total Amount</th>
+                <td>₹{{ order.order_total }}</td>
+            </tr>
+            <tr>                    
+                <th>Payment Method</th>
+                <td>{{ order.payment_method }}</td>
+            </tr>
+            <tr>
+                <th>Order Status</th>
+                <td>{{ order.status }}</td>
+            </tr>
+        </table>
+    
+        <h3>Order Items</h3>
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td>{{ item.product.title }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>₹{{ item.quantity|multiply:item.product_price|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                {% if order.discounts %}
+                <tr>
+                    <th colspan="2"> Discount:</th>
+                    <td>₹{{ order.discounts }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <th colspan="2">Coupon Discount:</th>
+                    <td>Nil</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <th colspan="2">Total Price:</th>
+                    <td>₹{{ order.order_total }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    
+        <div class="button-container">
+            <a href="{% url 'store:home' %}" class="back-to-shop">Continue Shopping</a>&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="{% url 'cart:order_invoice' order.id %}" class="btn btn-primary">Download Invoice</a>
+    
+            {% if order.status == 'Payment Pending' %}
+            <form action="{% url 'cart:razorpay_repayment' order.id %}" method="POST" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="razorpay_order_id" value="{{ order.razorpay_order_id }}">
+<!-- Repay Button -->
+                <button id="rzp-repay-button" class="btn btn-primary">Repay</button>
+            </form>
+            {% endif %}
+            
+    
+            {% if order.status == 'Delivered' %}
+            {% include 'dashboard/modal/return_reason.html' %}
+            {% elif order.status != 'Cancelled' and order.status != 'Return Approved' %}
+            <a href="{% url 'store:order_cancel' order.id %}" class="cancel-order-btn">Cancel Order</a>
+            {% endif %}
+        </div>
+    </div>
+    
+        
+
+
+    <form action="{% url 'cart:razorpay_repayment' order.id %}" method="POST">
+        {% csrf_token %}
+        <script src="https://checkout.razorpay.com/v1/checkout.js"
+            data-key="{{ payment.key_id }}"
+            data-amount="{{ payment.amount }}"
+            data-currency="{{ payment.currency }}"
+            data-order_id="{{ payment.id }}"
+            data-buttontext="Pay with Razorpay"
+            data-name="Your Store"
+            data-description="Order Payment"
+            data-theme.color="#F37254">
+        </script>
+    </form>
+    
+
+    <script>
+        document.getElementById('rzp-repay-button').onclick = function (e) {
+            e.preventDefault();
+    
+            const options = {
+                "key": "{{ razorpay_key_id }}",  // Razorpay Key ID
+                "amount": "{{ order.order_total|floatformat:0|add:'00' }}", // Amount in paise (₹100 = 10000 paise)
+                "currency": "INR",
+                "name": "Your Store Name",
+                "description": "Order Payment",
+                "order_id": "{{ order.razorpay_order_id }}",  // Razorpay Order ID
+                "handler": function (response) {
+                    // Submit Razorpay payment details to the server
+                    fetch("{% url 'cart:razorpay_payment_handler' %}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": "{{ csrf_token }}"
+                        },
+                        body: JSON.stringify({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                            order_id: "{{ order.id }}"
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            location.href = "{% url 'cart:order_success' order.id %}";
+                        } else {
+                            alert("Payment failed: " + data.message);
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+                },
+                "theme": {
+                    "color": "#3399cc"
+                },
+            };
+    
+            const rzp1 = new Razorpay(options);
+            rzp1.open();
+        };
+    </script>
+    
+    
+    
+
+    {% endblock content %}

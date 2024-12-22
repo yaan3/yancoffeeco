@@ -1,0 +1,309 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% block content %}
+{% load sweetify %}
+{{ sweetify.sweetalert|safe }}
+
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="index.html" rel="nofollow">Home</a>
+                <span></span> {{ product.category }}
+                <span></span> {{ title }}
+            </div>
+        </div>
+    </div>
+    <section class="mt-50 mb-50">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="product-detail accordion-detail">
+                        <div class="row mb-50">
+                            <div class="col-md-6 col-sm-12 col-xs-12">
+                                <div class="detail-gallery">
+                                    <span class="zoom-icon"><i class="fi-rs-search"></i></span>
+                                    <div class="product-image-slider">
+                                        {% for image in product_images %}
+                                        <figure class="border-radius-10">
+                                            <img src="{{ image.images.url }}" alt="{{ product.title }}">
+                                        </figure>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="slider-nav-thumbnails pl-15 pr-15">
+                                        {% for image in product_images %}
+                                        <div><img src="{{ image.images.url }}" alt="{{ product.title }}"></div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 col-sm-12 col-xs-12">
+                                <div class="detail-info">
+                                    <h2 class="title-detail">{{ product.title }}</h2>
+                                    <div class="product-detail-rating">
+                                        <div class="pro-details-brand">
+                                            <span> Category: <a href="shop-grid-right.html">{{ product.category }}</a></span>
+                                        </div>
+                                    </div>
+                                    <div class="product-price primary-color float-left">
+                                        <div class="product-price primary-color float-left">
+                                            <ins><span id="product-price">₹{{ product_attributes.0.price }}</span></ins>
+                                        </div>
+                                        {% if product_attributes.0.old_price %}
+                                            <ins><span class="old-price font-md ml-15" id='product-old-price'>₹{{ product_attributes.0.old_price }}</span></ins>
+                                        {% endif %}
+                                    </div>
+                                    <div class="bt-1 border-color-1 mt-15 mb-15"></div>
+                                    <div class="short-desc mb-30">
+                                        <p>{{ product.description }}</p>
+                                    </div>
+
+                                    <div class="product_sort_info font-xs mb-30">
+                                        <ul>
+                                            <li class="mb-10"><i class="fi-rs-crown mr-5"></i> 1 Year {{ product.category }} Brand Warranty</li>
+                                            <li class="mb-10"><i class="fi-rs-refresh mr-5"></i> 30 Day Return Policy</li>
+                                            <li><i class="fi-rs-credit-card mr-5"></i> Cash on Delivery available</li>
+                                        </ul>
+                                    </div>
+
+                                    
+                                    <form id="add-to-cart-form" action="{% url 'cart:add_to_cart' %}" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value="{{ product.p_id }}">
+                                        
+                                        <div class="attr-detail attr-size">
+                                            <strong class="mr-10">Size</strong>
+                                            <div class="size-buttons">
+                                                {% for attribute in product_attributes %}
+                                                    <button 
+                                                        type="button" 
+                                                        class="size-button" 
+                                                        data-size-id="{{ attribute.id }}" 
+                                                        onclick="selectSize({{ attribute.id }}, '{{ attribute.size }}')">
+                                                        {{ attribute.size }} 
+                                                    </button>
+                                                {% endfor %}
+                                            </div>
+                                            <input type="hidden" name="selected_size" id="selected-size" value="">
+                                        </div><br>
+                                        
+                                        <div class="quantity">
+                                            <strong class="mr-10">Quantity</strong>
+                                            <input type="number" name="quantity" id="quantity" value="1" min="1" style="width: 70px;">
+                                        </div><br>
+                                        <div class="product-extra-link2">
+                                            <button type="submit" id="add-cart" class="button button-add-to-cart">Add to cart</button>
+                                            <a 
+                                                aria-label="Add To Wishlist" 
+                                                class="action-btn hover-up" 
+                                                href="#" 
+                                                id="wishlist-link"
+                                                onclick="addToWishlist(event)">
+                                                <i class="fi-rs-heart"></i>
+                                            </a>
+                                        </div>
+                                    </form>
+                                    
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            const form = document.getElementById('add-to-cart-form');
+                                            const selectedSizeInput = document.getElementById('selected-size');
+
+                                            form.addEventListener('submit', function (event) {
+                                                // Validate size for adding to cart
+                                                if (!selectedSizeInput.value) {
+                                                    event.preventDefault(); // Stop form submission
+                                                    Swal.fire({
+                                                        toast: true,
+                                                        text: 'Please select a size before adding to the cart.',
+                                                        icon: 'error',
+                                                        position: 'top-end',
+                                                        timer: 3000,
+                                                        showConfirmButton: false
+                                                    });
+                                                }
+                                            });
+                                        });
+
+                                        function addToWishlist(event) {
+                                            const selectedSizeInput = document.getElementById('selected-size');
+
+                                            // Check if size is selected
+                                            if (!selectedSizeInput.value) {
+                                                event.preventDefault(); // Stop navigation
+                                                Swal.fire({
+                                                    toast: true,
+                                                    text: 'Please select a size before adding to the wishlist.',
+                                                    icon: 'error',
+                                                    position: 'top-end',
+                                                    timer: 3000,
+                                                    showConfirmButton: false
+                                                });
+                                            } else {
+                                                // Allow navigation to the wishlist link
+                                                const wishlistLink = document.getElementById('wishlist-link');
+                                                wishlistLink.href = `{% url 'store:add_to_wishlist' product.p_id %}?attribute_id=${selectedSizeInput.value}`;
+                                            }
+                                        }
+
+                                        function selectSize(sizeId) {
+                                            document.getElementById('selected-size').value = sizeId;
+
+                                            // Highlight the selected size button
+                                            document.querySelectorAll('.size-button').forEach(btn => {
+                                                btn.classList.remove('selected');
+                                            });
+                                            document.querySelector(`.size-button[data-size-id="${sizeId}"]`).classList.add('selected');
+                                        }
+
+
+
+                                        document.querySelectorAll('.size-button').forEach(button => {
+                                            button.addEventListener('click', () => {
+                                                // Remove the 'selected' class from all buttons
+                                                document.querySelectorAll('.size-button').forEach(btn => {
+                                                    btn.classList.remove('selected');
+                                                });
+
+                                                // Add the 'selected' class to the clicked button
+                                                button.classList.add('selected');
+                                                
+                                                // Get the selected size ID
+                                                const sizeId = button.dataset.sizeId;
+        
+                                                // Update the hidden input field with the selected size ID
+                                                document.getElementById('selected-size').value = sizeId;
+        
+                                                // Make an AJAX request to fetch the price for the selected size
+                                                fetch(`/get_price/${sizeId}/`)
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        // Update the displayed price with the fetched price
+                                                        document.getElementById('product-price').innerText = `₹${data.price}`;
+                                                        document.getElementById('product-old-price').innerText = `₹${data.old_price}`;
+                                                    })
+                                                    .catch(error => {
+                                                        console.error('Error:', error);
+                                                    });
+                                            });
+                                        });
+
+
+
+                                    </script>
+                                    
+                                    <style>
+                                        .size-button {
+                                            background-color: transparent;
+                                            border: 1px solid #ccc;
+                                            color: #333;
+                                            padding: 5px 10px;
+                                            cursor: pointer;
+                                            transition: all 0.3s;
+                                        }
+
+                                        .size-button.selected {
+                                            background-color: #088178;
+                                            color: white;
+                                            border-color: #088178;
+                                        }
+
+                                        .size-button:hover {c
+                                            background-color: #f2f2f2;
+                                        }
+                                    </style>
+                                </div> 
+                                
+                                <ul class="product-meta font-xs color-grey mt-50">
+                                    <li class="mb-5">Available Stocks:</li>
+                                    {% for attr in product_attributes %}
+                                        <li class="mb-5">Size: {{ attr.size }} - Stock: {{ attr.stock }}</li>
+                                    {% empty %}
+                                        <li class="mb-5">Out of Stock</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        
+
+                        <div class="row">
+                            <div class="col-lg-10 m-auto entry-main-content">
+                                <h2 class="section-title style-1 mb-30">Description</h2>
+                                <div class="description mb-50">
+                                    <p>{{product.description}}</p>
+                                </div>
+                                <h3 class="section-title style-1 mt-40 mb-30">Additional info</h3>
+                                <ul class="product-more-infor">
+                                    {% for line in specifications_lines %}
+                                    <li><span>{{ line }}</span></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+
+
+                        <div class="related-products mt-50">
+                            <h3 class="section-title style-1 mb-30">Related Products</h3>
+                            <div class="row">
+                                {% for related_product in related_products %}
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="product-card">
+                                        <figure class="product-image">
+                                            <a href="{% url 'store:product_view' related_product.p_id %}">
+                                                <img src="{{ related_product.image.url }}" alt="{{ related_product.title }}" class="img-fluid">
+                                            </a>
+                                        </figure>
+                                        <div class="product-info">
+                                            <h4 class="product-title">
+                                                <a href="{% url 'store:product_view' related_product.p_id %}">
+                                                    {{ related_product.title }}
+                                                </a>
+                                            </h4>
+                                            <div class="product-price primary-color float-left">
+                                                <ins class="price-current">
+                                                    <span id="product-price">₹{{ product_attributes.0.price }}</span>
+                                                </ins>
+                                                {% if product_attributes.0.old_price %}
+                                                    <del class="price-old">
+                                                        <span id="product-old-price" class="old-price font-md ml-15">
+                                                            ₹{{ product_attributes.0.old_price }}
+                                                        </span>
+                                                    </del>
+                                                {% endif %}
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <style>
+                                    .price-current {
+                                        text-decoration: none; /* No underline for current price */
+                                        font-weight: bold;
+                                        font-size: 18px;
+                                        {% comment %} color: #088178; {% endcomment %}
+                                    }
+                                    
+                                    .price-old {
+                                        text-decoration: line-through; /* Strike-through for old price */
+                                        {% comment %} color: #999; {% endcomment %}
+                                    }
+                                    
+                                </style>
+
+                                {% empty %}
+                                <p>No related products found.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock content %}

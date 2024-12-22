@@ -1,0 +1,197 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<main class="main">
+    <!-- Breadcrumb and Page Header -->
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="{% url 'store:home' %}" rel="nofollow">Home</a>
+                <span></span> Shop
+                <span></span> Payment Method
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Section -->
+    <section class="mt-50 mb-50">
+        <div class="container">
+            <!-- Billing Details -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-25">
+                        <h4>Billing Details</h4>
+                    </div>
+                    <div>
+                        <table class="table">
+                            <tbody>
+                                <tr><th>Name</th><td>{{ order.user.username }}</td></tr>
+                                <tr><th>Address</th><td>{{ order.selected_address.street_address }}</td></tr>
+                                <tr><th>City</th><td>{{ order.selected_address.city }}</td></tr>
+                                <tr><th>State</th><td>{{ order.selected_address.state }}</td></tr>
+                                <tr><th>Pincode</th><td>{{ order.selected_address.postal_code }}</td></tr>
+                                <tr><th>Country</th><td>{{ order.selected_address.country }}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Order Summary and Payment Methods -->
+                <div class="col-md-8">
+                    <div class="order_review">
+                        <div class="mb-20">
+                            <h4>Your Orders</h4>
+                        </div>
+                        <div class="table-responsive order_table text-center">
+                            <table class="table">
+                                <thead>
+                                    <tr><th>Image</th><th>Product</th><th>Quantity</th><th>Total</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in items %}
+                                    <tr>
+                                        <td class="image product-thumbnail"><img src="{{ item.product.product.image.url }}" alt="#"></td>
+                                        <td><h5><a href="shop-product-full.html">{{ item.product.product.title }}</a></h5></td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>₹{{ item.total_price }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr><td class="cart_total_label">Cart Total</td><td colspan="2" class="cart_total_amount">₹{{ total_cart_price }}</td></tr>
+                                    <tr><td class="cart_total_label">Discount</td><td colspan="2" class="cart_total_amount">₹{{ discounts }}</td></tr>
+                                    <tr><td class="cart_total_label">Total After Discount</td><td colspan="2" class="cart_total_amount">₹{{ total_after_discount }}</td></tr> 
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+                        
+                        <!-- Messages -->
+                        {% if messages %}
+                        <div class="messages">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Payment Method Selection Form -->
+                        <div class="row">
+                            <!-- Cash on Delivery Option -->
+                            {% comment %} {% if total_after_discount < 1000 %} {% endcomment %}
+                            <div class="col-md-4 mb-3">
+                                <form id="cod-form" method="POST" action="{% url 'cart:payment_method_selection' order.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="payment_method" value="COD">
+                                    <button type="submit" class="btn btn-primary btn-block">Cash on Delivery</button>
+                                </form>
+                            </div>
+                            {% comment %} {% endif %} {% endcomment %}
+                            
+                            <!-- Wallet Payment Option -->
+                            <div class="col-md-4 mb-3">
+                                <form id="wallet-form" method="POST" action="{% url 'cart:payment_method_selection' order.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="payment_method" value="Wallet">
+                                    <button type="submit" class="btn btn-primary btn-block">Wallet</button>
+                                </form>
+                            </div>
+                            
+                            <!-- Razorpay Payment Option -->
+                            <div class="col-md-4 mb-3">
+                                <form id="razorpay-form" method="POST" action="{% url 'cart:payment_method_selection' order.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="payment_method" value="Razorpay">
+                                    <input type="hidden" name="razorpay_order_id" value="{{ razorpay_order_id }}">
+                                    <button id="rzp-button1" type="button" class="btn btn-primary btn-block">Razorpay</button>
+                                </form>
+                            </div>
+                            
+                            {% comment %} <!-- Wallet + Razorpay Combined Payment Option -->
+                             
+                             {% if wallet_balance < total_after_discount and wallet_balance > 0 %}
+                             <div class="col-md-4 mb-3">
+                                <form id="wallet-razorpay-form" method="POST" action="{% url 'cart:payment_method_selection' order.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="payment_method" value="Wallet-Razorpay">
+                                    <button id="wallet-razorpay-button" type="button" class="btn btn-primary btn-block">Combine Pay</button>
+                                </form>
+                            </div>                                
+                             {% endif %} {% endcomment %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Normal Razorpay Script -->
+<script>
+    var options1 = {
+        "key": "{{ razorpay_key_id }}", // Razorpay Key ID
+        "amount": "{{ total_after_discount|floatformat:0|add:'00.0' }}", // Amount in paise
+        "currency": "INR",
+        "name": "YAN COFFEE CO",
+        "description": "Order Payment",
+        "image": "{% static 'store/imgs/theme/YAN.png' %}",
+        "order_id": "{{ razorpay_order_id }}", // Razorpay Order ID
+        "handler": function (response) {
+            var razorpayForm = document.getElementById('razorpay-form');
+            razorpayForm.innerHTML += '<input type="hidden" name="razorpay_payment_id" value="' + response.razorpay_payment_id + '">';
+            razorpayForm.innerHTML += '<input type="hidden" name="razorpay_order_id" value="' + response.razorpay_order_id + '">';
+            razorpayForm.innerHTML += '<input type="hidden" name="razorpay_signature" value="' + response.razorpay_signature + '">';
+            razorpayForm.submit();
+        },
+        "prefill": { 
+            "name": "{{ order.user.username }}",
+            "email": "{{ order.user.email }}",
+            "contact": "{{ order.user.phone }}"
+        },
+        "theme": { "color": "#3399cc" },
+    };
+    
+    var rzp1 = new Razorpay(options1);
+    document.getElementById('rzp-button1').onclick = function(e){
+        rzp1.open();
+        e.preventDefault();
+
+
+
+        {% comment %} "handler": function (response) {
+    var razorpayForm = document.getElementById('razorpay-form');
+    razorpayForm.innerHTML += '<input type="hidden" name="razorpay_payment_id" value="' + response.razorpay_payment_id + '">';
+    razorpayForm.innerHTML += '<input type="hidden" name="razorpay_order_id" value="' + response.razorpay_order_id + '">';
+    razorpayForm.innerHTML += '<input type="hidden" name="razorpay_signature" value="' + response.razorpay_signature + '">';
+    
+    // Submit the form
+    razorpayForm.submit();
+
+    // Handle redirection on success
+    fetch("{% url 'cart:razorpay_payment_handler' %}", {
+        method: "POST",
+        body: new FormData(razorpayForm),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            window.location.href = "{% url 'cart:order_success' order.id %}";
+        } else {
+            alert('Payment verification failed');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+} {% endcomment %}
+
+
+
+
+
+    }
+</script>
+    
+
+{% endblock %}

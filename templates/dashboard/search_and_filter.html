@@ -1,0 +1,137 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="{% url 'store:home' %}" rel="nofollow">Home</a>
+                <span></span> Search Results
+            </div>
+        </div>
+    </div>
+    <section class="mt-50 mb-50">
+        <div class="container">
+            <div class="row flex-row-reverse">
+                <div class="col-lg-9">
+                    <div class="shop-product-fillter">
+                        <div class="totall-product">
+                            <p>We found <strong class="text-brand">{{ products|length }}</strong> items for you!</p>
+                        </div>
+                        <form class="sort-by-product-area" method="get" id="filter-form">
+                            <input type="hidden" name="search_field" value="{{ search_field }}">
+                            <input type="hidden" name="category_id" value="{{ category.c_id }}">
+                            <div class="sort-by-cover">
+                                <div class="sort-by-product-wrap">
+                                    <div class="sort-by">
+                                        <span><i class="fi-rs-apps"></i>Show:</span>
+                                    </div>
+                                    <div class="sort-by-dropdown-wrap">
+                                        <select name="items_per_page" onchange="document.getElementById('filter-form').submit();">
+                                            <option value="9" {% if items_per_page == '9' %}selected{% endif %}>9</option>
+                                            <option value="20" {% if items_per_page == '20' %}selected{% endif %}>20</option>
+                                            <option value="30" {% if items_per_page == '30' %}selected{% endif %}>30</option>
+                                            <option value="all" {% if items_per_page == 'all' %}selected{% endif %}>All</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sort-by-cover">
+                                <div class="sort-by-product-wrap">
+                                    <div class="sort-by">
+                                        <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
+                                    </div>
+                                    <div class="sort-by-dropdown-wrap">
+                                        <select name="sort_by" onchange="document.getElementById('filter-form').submit();">
+                                            <option value="featured" {% if sort_by == 'featured' %}selected{% endif %}>Featured</option>
+                                            <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                                            <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                                            <option value="new_arrivals" {% if sort_by == 'new_arrivals' %}selected{% endif %}>New Arrivals</option>
+                                            <option value="title_asc" {% if sort_by == 'title_asc' %}selected{% endif %}>Name: Aa-Zz</option>
+                                            <option value="title_desc" {% if sort_by == 'title_desc' %}selected{% endif %}>Name: Zz-Aa</option>
+                                        </select>                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="row product-grid-3">
+                        {% for product in products %}
+                        {% if not product.is_blocked %}
+                        <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                            <div class="product-cart-wrap mb-30">
+                                <div class="product-img-action-wrap">
+                                    <div class="product-img product-img-zoom">
+                                        <a href="{% url 'store:product_view' product.p_id %}">
+                                            <img class="default-img" src="{{ product.image.url }}" alt="{{ product.title }}">
+                                            <img class="hover-img" src="{{ product.image.url }}" alt="{{ product.title }}">
+                                        </a>
+                                    </div>
+                                    <!-- Other product actions and details -->
+                                </div>
+                                <div class="product-content-wrap">
+                                    <h2><a href="{% url 'store:product_view' product.p_id %}">{{ product.title | truncatechars:30 }}</a></h2>
+                                    <div class="product-price">
+                                        <span>&#8377;{{ product.product_attributes.first.price }}</span>
+                                        {% if product.product_attributes.first.old_price != 0 and product.product_attributes.first.price != 0 %}
+                                        <span class="old-price">&#8377;{{ product.product_attributes.first.old_price }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="product-action-1 show">
+                                        <a aria-label="Add To Wishlist" class="action-btn hover-up" href="{% url 'store:add_to_wishlist' product.p_id %}"><i class="fi-rs-heart"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <!-- Pagination -->
+                </div>
+                <div class="col-lg-3 primary-sidebar sticky-sidebar">
+                    <div class="widget-category mb-30">
+                        <h5 class="section-title style-1 mb-30 wow fadeIn animated">Category</h5>
+                        <ul class="categories">
+                            {% for category in categories %}
+                            {% if not category.is_blocked %}
+                            <li><a href="{% url 'store:product_list_by_category' category.c_id %}?search_field={{ search_field }}&price_filter={{ price_filter }}">{{ category.c_name }}</a></li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <!-- Additional filters and widgets -->
+                    <div class="sidebar-widget price_range range mb-30">
+                        <h5 class="section-title style-1 mb-30">Filter by price</h5>
+                        <form method="get" id="price-filter-form">
+                            <input type="hidden" name="search_field" value="{{ search_field }}">
+                            <input type="hidden" name="category_id" value="{{ category.c_id }}">
+                            <div class="price-filter">
+                                <input type="radio" name="price_filter" value="below_500" id="below_500" class="form-check-input" {% if price_filter == 'below_500' %}checked{% endif %}>
+                                <label for="below_500" class="form-check-label">Below ₹500</label>
+                            </div>
+                            <div class="price-filter">
+                                <input type="radio" name="price_filter" value="500_1000" id="500_1000" class="form-check-input" {% if price_filter == '500_1000' %}checked{% endif %}>
+                                <label for="500_1000" class="form-check-label">₹500 - ₹1000</label>
+                            </div>
+                            <div class="price-filter">
+                                <input type="radio" name="price_filter" value="1000_1500" id="1000_1500" class="form-check-input" {% if price_filter == '1000_1500' %}checked{% endif %}>
+                                <label for="1000_1500" class="form-check-label">₹1000 - ₹1500</label>
+                            </div>
+                            <div class="price-filter">
+                                <input type="radio" name="price_filter" value="1500_2000" id="1500_2000" class="form-check-input" {% if price_filter == '1500_2000' %}checked{% endif %}>
+                                <label for="1500_2000" class="form-check-label">₹1500 - ₹2000</label>
+                            </div>
+                            <div class="price-filter">
+                                <input type="radio" name="price_filter" value="above_2000" id="above_2000" class="form-check-input" {% if price_filter == 'above_2000' %}checked{% endif %}>
+                                <label for="above_2000" class="form-check-label">Above ₹2000</label>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-default">Apply</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

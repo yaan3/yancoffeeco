@@ -1,0 +1,95 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+
+<main class="main wishlist-page">
+    <div class="container">
+
+        <div class="wishlist-table-wrapper mt-50">
+            <table class="table wishlist-table">
+                <thead>
+                    <tr>
+                        <th>Product Image</th>
+                        <th>Product Name</th>
+                        <th>Size</th>
+                        <th>Price</th>
+                        <th>Stock Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if items %}
+                        {% for item in items %}
+                            <tr>
+                                <!-- Product Image -->
+                                <td>
+                                    <a href="{% url 'store:product_view' item.product.p_id %}">
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" width="100">
+                                    </a>
+                                </td>
+
+                                <!-- Product Name -->
+                                <td>{{ item.product.title }}</td>
+
+                                <!-- Variant Details -->
+                                <td>
+                                    {% if item.product_attribute %}
+                                        {{ item.product_attribute.size.size }}<br>
+                                    {% else %}
+                                        No variant selected
+                                    {% endif %}
+                                </td>
+
+                                <!-- Price -->
+                                <td>
+                                    {% if item.product_attribute %}
+                                    ₹{{ item.product_attribute.price }}
+                                    {% else %}
+                                    ₹{{ item.product.price }}
+                                    {% endif %}
+                                </td>
+
+                                <!-- Stock Status -->
+                                <td>
+                                    {% if item.product_attribute and item.product_attribute.in_stock %}
+                                        <span class="text-success">In Stock</span>
+                                    {% else %}
+                                        <span class="text-danger">Out of Stock</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Actions -->
+                                <td>
+                                    <!-- Add to Cart -->
+                                    <form action="{% url 'cart:add_to_cart' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value="{{ item.product.p_id }}">
+                                        <input type="hidden" name="selected_size" value="{{ item.product_attribute.id }}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <input type="hidden" name="source" value="wishlist">
+                                        {% if item.product_attribute %}
+                                            <input type="hidden" name="selected_size" value="{{ item.product_attribute.id }}" required>
+                                        {% endif %}
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            Add to Cart
+                                        </button>
+                                    </form>
+
+                                    <!-- Remove from Wishlist -->
+                                    <a href="{% url 'store:delete_wishlist' item.id %}" class="btn btn-sm btn-danger">
+                                        Remove
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Your wishlist is empty.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+{% endblock %}

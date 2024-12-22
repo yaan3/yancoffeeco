@@ -1,0 +1,412 @@
+﻿{% extends 'dashboard/base.html' %}
+{% load static %}
+    
+    {% block content %}
+    <style>
+        /* Full-width styling for the banner */
+        .home-slider {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    
+        .hero-slider-1 {
+            width: 100%;
+        }
+    
+        .hero-slider-1 .container {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .single-slider-img img {
+            width: 100%;
+            height: auto; /* Maintain aspect ratio */
+        }
+    </style>
+    
+    <main class="main">       
+        <section class="home-slider position-relative pt-50">                           
+            <div class="hero-slider-1 dot-style-1 dot-style-1-position-1">
+                <div class="single-hero-slider single-animation-wrap">
+                    <div class="container">
+                        <div class="row align-items-center slider-animated-1" style={width:100%}>
+                            <div class="single-slider-img single-slider-img-1">
+                                <img class="animated slider-1 rounded-4" src="{% static 'store/imgs/slider/banner1.webp' %}" alt="">
+                            </div>
+                        </div>
+                    </div>
+                </div>      
+                <div class="single-hero-slider single-animation-wrap">
+                    <div class="container">
+                        <div class="row align-items-center slider-animated-1">
+                                <div class="single-slider-img single-slider-img-1">
+                                    <img class="animated slider-1 rounded-4" src="{% static 'store/imgs/slider/banner4.webp' %}" alt="">
+                                </div>
+                            </div>
+                    </div>
+                </div>
+                <div class="single-hero-slider single-animation-wrap">
+                    <div class="container">   
+                            <div class="single-slider-img single-slider-img-1">
+                                <img class="animated slider-1 rounded-4" src="{% static 'store/imgs/slider/banner5.webp' %}" alt="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slider-arrow hero-slider-1-arrow"></div>
+        </section>
+
+        <section class="popular-categories section-padding mt-15 mb-25">
+            <div class="container wow fadeIn animated">
+                <h3 class="section-title mb-20"><span>Shop</span> </h3>
+                <div class="carausel-6-columns-cover position-relative">
+                    <div class="slider-arrow slider-arrow-2 carausel-6-columns-arrow" id="carausel-6-columns-arrows"></div>
+                    <div class="carausel-6-columns" id="carausel-6-columns">
+                        {% for category in categories %}
+                        {% if category.is_blocked != True and category.c_name != 'Special Edition' %}
+                            <div class="card-1">
+                                
+                                <figure class=" img-hover-scale overflow-hidden">
+                                    <a href="{% url 'store:product_list_by_category' category.c_id %}">
+                                        <img src="{{ category.c_image.url }}" alt="{{ category.c_name }}">
+                                    </a>
+                                </figure>
+                                <h5><a href="{% url 'store:product_list_by_category' category.c_id %}">{{ category.c_name }}</a></h5>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+
+
+
+        <section class="product-tabs section-padding position-relative wow fadeIn animated">
+            <div class="container">
+                <div class="tab-header">
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="nav-tab-one" data-bs-toggle="tab" data-bs-target="#tab-one" type="button" role="tab" aria-controls="tab-one" aria-selected="true">Featured</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="nav-tab-two" data-bs-toggle="tab" data-bs-target="#tab-two" type="button" role="tab" aria-controls="tab-two" aria-selected="false">Popular</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="nav-tab-three" data-bs-toggle="tab" data-bs-target="#tab-three" type="button" role="tab" aria-controls="tab-three" aria-selected="false">New added</button>
+                        </li>
+                    </ul>
+                    <a href="{% url 'store:shop' %}" class="view-more d-none d-md-flex">View More<i class="fi-rs-angle-double-small-right"></i></a>
+                </div>
+                <!-- End nav-tabs -->
+                <div class="tab-content wow fadeIn animated" id="myTabContent">
+                    
+                    <!-- TAB_ONE -->
+                    
+                        
+                    <div class="tab-pane fade show active" id="tab-one" role="tabpanel" aria-labelledby="tab-one">
+                        <!-- Product Grid for Featured Products -->
+                        <div class="row product-grid-3">
+                           
+                           {% for product in featured_products %}
+                            {% if product.is_blocked != True %}
+
+                            <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                <div class="product-cart-wrap mb-30">
+                                    <div class="product-img-action-wrap">
+                                        <div class="product-img product-img-zoom">
+                                            <a href="{% url 'store:product_view' product.p_id %}">
+                                                <img class="default-img" src="{{ product.image.url }}" alt="{{ product.title }}">
+                                                <img class="hover-img" src="{{ product.image.url }}" alt="{{ product.title }}">
+                                            </a>
+                                        </div>
+                                        
+<!-- 
+                                        <div class="product-badges product-badges-position product-badges-mrg">
+                                            <span class="hot">Hot</span>
+                                        </div> -->
+
+
+                                    </div>
+                                    <div class="product-content-wrap">
+                                        <div class="product-category">
+                                            <!-- <a href="{% url 'store:product_view' product.p_id %}">{{ product.sub_category }}</a> -->
+                                        </div>
+                                        <h2><a href="{% url 'store:product_view' product.p_id %}">{{ product.title | truncatechars:35 }}</a></h2>
+                                         
+                                        <div class="product-price">
+                                            <span>&#8377;{{ product.product_attributes.first.price }}</span>
+                                            {% if product.product_attributes.first.old_price != 0 and product.product_attributes.first.price != 0 %}
+                                            <span class="old-price">&#8377;{{ product.product_attributes.first.old_price }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="product-action-1 show">
+                                            <a aria-label="Add To Wishlist" class="action-btn hover-up" href="{% url 'store:add_to_wishlist' product.p_id %}?attribute_id={{ product.product_attributes.first.id }}">
+                                                <i class="fi-rs-heart"></i>
+                                            </a>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% endif %}
+                           {% endfor %}
+                            
+                        </div>
+                        <!-- End Product Grid for Featured Products -->
+                    </div>
+
+                    <!-- TAB_TWO -->
+
+                    <div class="tab-pane fade" id="tab-two" role="tabpanel" aria-labelledby="tab-two">
+                        <!-- Product Grid for Popular Products -->
+                        <div class="row product-grid-3">
+                           
+                           {% for product in popular_products %}        
+                            {% if product.is_blocked != True %}
+                        
+                            <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                <div class="product-cart-wrap mb-30">
+                                    <div class="product-img-action-wrap">
+                                        <div class="product-img product-img-zoom">
+                                            <a href="{% url 'store:product_view' product.p_id %}">
+                                                <img class="default-img" src="{{ product.image.url }}" alt="{{ product.title }}">
+                                                <img class="hover-img" src="{{ product.image.url }}" alt="{{ product.title }}">
+                                            </a>
+                                        </div>
+                                        
+                                       
+                                         
+                                        <!--<div class="product-badges product-badges-position product-badges-mrg">
+                                            <span class="hot">Hot</span>
+                                        </div> -->
+
+
+                                    </div>
+                                    <div class="product-content-wrap">
+                                        <div class="product-category">
+                                            <!-- <a href="{% url 'store:product_view' product.p_id %}">{{ product.sub_category }}</a> -->
+                                        </div>
+                                        <h2><a href="{% url 'store:product_view' product.p_id %}">{{ product.title | truncatechars:35 }}</a></h2>
+                                         
+                                        <div class="product-price">
+                                            <span>&#8377;{{ product.product_attributes.first.price }}</span>
+                                            {% if product.product_attributes.first.old_price != 0 and product.product_attributes.first.price != 0 %}
+                                            <span class="old-price">&#8377;{{ product.product_attributes.first.old_price }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="product-action-1 show">
+                                        {% if product.id in user_wishlist %}
+                                            <a aria-label="Remove from Wishlist" class="action-btn hover-up active" href="{% url 'store:delete_wishlist' product.p_id %}"><i class="fi-rs-heart"></i></a>
+                                        {% else %}
+                                            <a aria-label="Add To Wishlist" class="action-btn hover-up" href="{% url 'store:add_to_wishlist' product.p_id %}"><i class="fi-rs-heart"></i></a>
+                                        {% endif %}                                        
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% endif %}
+                           {% endfor %}
+                            
+                        </div>
+                        <!-- End Product Grid for Popular Products -->
+                    </div>
+
+                    <!-- TAB_THREE -->                    
+
+
+                    <div class="tab-pane fade" id="tab-three" role="tabpanel" aria-labelledby="tab-three">
+                        <!-- Product Grid for New Added Products -->
+                        <div class="row product-grid-3">
+                           
+                            
+                           {% for product in new_added_products %}    
+                            {% if product.is_blocked != True %}
+                        
+                            <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                <div class="product-cart-wrap mb-30">
+                                    <div class="product-img-action-wrap">
+                                        <div class="product-img product-img-zoom">
+                                            <a href="{% url 'store:product_view' product.p_id %}">
+                                                <img class="default-img" src="{{ product.image.url }}" alt="{{ product.title }}">
+                                                <img class="hover-img" src="{{ product.image.url }}" alt="{{ product.title }}">
+                                            </a>
+                                        </div>
+                                        
+                                        
+<!-- 
+                                        <div class="product-badges product-badges-position product-badges-mrg">
+                                            <span class="hot">Hot</span>
+                                        </div> -->
+
+
+                                    </div>
+                                    <div class="product-content-wrap">
+                                        <div class="product-category">
+                                            <!-- <a href="{% url 'store:product_view' product.p_id %}">{{ product.sub_category }}</a> -->
+                                        </div>
+                                        <h2><a href="{% url 'store:product_view' product.p_id %}">{{ product.title | truncatechars:35 }}</a></h2>
+                                        <div class="product-price">
+                                            <span>&#8377;{{ product.product_attributes.first.price }}</span>
+                                            {% if product.product_attributes.first.old_price != 0 and product.product_attributes.first.price != 0 %}
+                                            <span class="old-price">&#8377;{{ product.product_attributes.first.old_price }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="product-action-1 show">
+                                            <a aria-label="Add To Wishlist" class="action-btn hover-up" href="{% url 'store:add_to_wishlist' product.p_id %}"><i class="fi-rs-heart"></i></a> 
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% endif %}
+                           {% endfor %}
+                           
+                            
+                        </div>
+                        <!-- End Product Grid for New Added Products -->
+                    </div>
+                    <!-- End tab-pane for Featured Products -->
+                    <!-- Other tab-panes for Popular and New Added Products -->
+                </div>
+                <!-- End tab-content -->
+            </div>
+            <!-- End container -->
+        </section>
+        
+        
+        <section class="deals section-padding">
+            <div class="container">
+                <div class="row">
+                    <!-- <div class="col-lg-6 deal-co">
+                        <div class="deal wow fadeIn animated mb-md-4 mb-sm-4 mb-lg-0" style="background-image: url('{% static 'store/imgs/banner/vers-banner.png' %}');">
+                            <div class="deal-top">
+                                <h2 class="text-brand">2024 Red Bull Teamwear</h2>
+                                <h5>Limited quantities.</h5>
+                            </div>
+                            <div class="deal-content">
+                                <h6 class="product-title"><a href="shop-product-right.html">Summer Collection New Morden Design</a></h6>
+                                <div class="product-price"><span class="new-price">$139.00</span><span class="old-price">$160.99</span></div>
+                            </div>
+                            <div class="deal-bottom">
+                                <p>Hurry Up! Offer End In:</p>
+                                <div class="deals-countdown" data-countdown="2025/03/25 00:00:00"></div>
+                                <a href="shop-grid-right.html" class="btn hover-up">Shop Now <i class="fi-rs-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 deal-co">
+                        <div class="deal wow fadeIn animated" style="background-image: url('{% static 'store/imgs/banner/ham-banner.png' %}');">
+                            <div class="deal-top">
+                                <h2 class="text-brand">2024 Mercedes Teamwear</h2>
+                                <h5>Limited quantities.</h5>
+                            </div>
+                            <div class="deal-content">
+                                <h6 class="product-title"><a href="shop-product-right.html">Try something new on vacation</a></h6>
+                                <div class="product-price"><span class="new-price">$178.00</span><span class="old-price">$256.99</span></div>
+                            </div>
+                            <div class="deal-bottom">
+                                <p>Hurry Up! Offer End In:</p>
+                                <div class="deals-countdown" data-countdown="2026/03/25 00:00:00"></div>
+                                <a href="shop-grid-right.html" class="btn hover-up">Shop Now <i class="fi-rs-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+        </section>
+        
+        {% comment %} <section class="bg-grey-9 section-padding">
+            <div class="container pt-25 pb-25">
+                <div class="heading-tab d-flex">
+                    <div class="heading-tab-left wow fadeIn animated">
+                        <!-- <h3 class="section-title mb-20"><span>Monthly</span> Best Sell</h3> -->
+                    </div>
+                    <div class="heading-tab-right wow fadeIn animated">
+                        <!-- Any additional content can be added here -->
+                    </div>
+                </div>
+                <h3 class="section-title mb-20"><span>Shop</span> Posters</h3>
+                <div class="row">
+                    <div class="col-lg-3 d-none d-lg-flex">
+                        <div class="banner-img style-2 wow fadeIn animated">
+                            <img src="{% static 'store/imgs/banner/banner-9.png' %}" alt="product banner">
+                            <div class="banner-text">
+                                <h5 style="color: rgb(190, 190, 190);">Racing Posters</h5>
+                                <h4 class="mt-5">Shop attractive <br>Posters</h4>
+                                <a href="{% url 'store:search_and_filter' %}?search_field=poster&subcategory_id={{ poster_subcategory_id }}" class="text-white">View More <i class="fi-rs-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="row product-grid-3" id="product-list">
+                            {% for product in poster_products|slice:":3" %}
+                                {% if not product.is_blocked %}
+                                    <div class="col-lg-4 col-12 col-sm-6" style="margin-bottom:  0px;">
+                                        <div class="product-cart-wrap mb-30">
+                                            <div class="product-img-action-wrap">
+                                                <div class="product-img product-img-zoom">
+                                                    <a href="{% url 'store:product_view' product.p_id %}">
+                                                        <img class="default-img" src="{{ product.image.url }}" alt="{{ product.title }}">
+                                                        {% if product.images.first %}
+                                                            <img class="hover-img" src="{{ product.images.first.images.url }}" alt="">
+                                                        {% endif %}
+                                                    </a>
+                                                </div>
+                                                <div class="product-badges product-badges-position product-badges-mrg">
+                                                    {% if product.get_applicable_offer_percentage > 0 %}
+                                                        <span class="discount">{{ product.get_applicable_offer_percentage }}% Off</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="product-content-wrap">
+                                                <div class="product-category"></div>
+                                                <h2><a href="{% url 'store:product_view' product.p_id %}">{{ product.title|truncatechars:30 }}</a></h2>
+                                                <div class="product-price">
+                                                    <span>&#8377;{{ product.product_attributes.first.price }}</span>
+                                                    {% if product.product_attributes.first.old_price != 0 and product.product_attributes.first.price != 0 %}
+                                                        <span class="old-price">&#8377;{{ product.product_attributes.first.old_price }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="product-action-1 show">
+                                                    <a aria-label="Add To Wishlist" class="action-btn hover-up" href="{% url 'store:add_to_wishlist' product.p_id %}"><i class="fi-rs-heart"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section> {% endcomment %}
+        
+
+    </main><div id="preloader-active">
+        <div class="preloader d-flex align-items-center justify-content-center">
+            <div class="preloader-inner position-relative">
+                <div class="text-center">
+                    <h5 class="mb-10">Now Loading</h5>
+                    <div class="loader">
+                        <div class="bar bar1"></div>
+                        <div class="bar bar2"></div>
+                        <div class="bar bar3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+
+    </script>
+    
+    {% endblock content %}

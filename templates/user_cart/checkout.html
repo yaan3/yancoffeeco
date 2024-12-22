@@ -1,0 +1,116 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% block content %}
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="{% url 'store:home' %}" rel="nofollow">Home</a>
+                <span></span> Shop
+                <span></span> Checkout
+            </div>
+        </div>
+    </div>
+    <section class="mt-50 mb-50">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="divider mt-50 mb-50"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-25">
+                        <h4>Billing Details</h4>
+                    </div>
+                    <form method="post" action="{% url 'cart:checkout' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="existing_ ress">Select Existing Address:</label>
+                            <select class="form-control" name="existing_address" id="existing_address">
+                                {% for address in user_addresses %}
+                                    <option value="{{ address.id }}">{{ address.street_address }} {{ address.city }} {{ address.postal_code }} {{ address.state }} {{ address.country }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Proceed to Payment</button>
+                    </form><br>
+                    {% include 'user_cart/modal/address.html' %}
+                </div>
+                <div class="col-md-6">
+                    <div class="order_review">
+                        <div class="mb-20">
+                            <h4>Your Orders</h4>
+                        </div>
+                        <div class="table-responsive order_table text-center">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Image</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in items %}
+                                    <tr>
+                                        <td>
+                                            <h5><a href="shop-product-full.html">{{ item.product.product.title }}</a></h5>
+                                        </td>
+                                        <td class="image product-thumbnail"><img src="{{ item.product.product.image.url }}" alt="#"></td>
+                                        <td>₹{{ item.product.price }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>₹{{ item.total_price }}</td> <!-- Total price for each item -->
+                                    </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td colspan="4" class="text-right"><strong>Total Before Discount</strong></td>
+                                        <td><strong>₹{{ total_cart_price }}</strong></td> <!-- Total before applying coupon -->
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-right"><strong>Discount</strong></td>
+                                        <td><strong>- ₹{{ discounts }}</strong></td> <!-- Applied discount -->
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-right"><strong>Total After Discount</strong></td>
+                                        <td><strong>₹{{ total_after_discount }}</strong></td> <!-- Total after applying coupon -->
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+                    {% if messages %}
+                        <div class="messages">
+                            <ul class="messages">
+                                {% for message in messages %}
+                                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function () {
+                    var submitButton = form.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                    }
+                });
+            }
+        });
+    </script>
+</main>
+{% endblock content %}
