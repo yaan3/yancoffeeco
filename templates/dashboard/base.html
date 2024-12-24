@@ -14,7 +14,7 @@
 <meta property="og:type" content="">
 <meta property="og:url" content="">
 <meta property="og:image" content="">
-<link rel="shortcut icon" type="image/x-icon" href="{% static 'store/imgs/theme/favicon.png' %}">
+<link rel="shortcut icon" type="image/x-icon" href="{% static 'store/imgs/theme/fav1.png' %}">
 <link rel="stylesheet" href="{% static 'store/css/main.css' %}">
 <link rel="stylesheet" href="{% static 'store/cart/user_cart.css' %}">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
@@ -183,7 +183,7 @@
                             class="main-categori-wrap d-none d-lg-block">
                             <a class="categori-button-active" href="#"></a>
                         </div>
-                        <div class="main-menu main-menu-padding-1 main-menu-lh-2 d-none d-lg-block">
+                        <div class="main-menu main-menu-padding-1 main-menu-lh-2     d-none d-lg-block">
                             <nav>
                                 <ul>
                                     <li><a class="#" href="{% url 'store:home' %}">Home</a></li>
@@ -199,9 +199,9 @@
                                     </li>
                                     <li><a href="{% url 'store:user_profile' %}">My Account</a>
                                     </li> 
-                                    <li>
+                                    {% comment %} <li>
                                         <a href="page-about.html">About</a>
-                                    </li>
+                                    </li> {% endcomment %}
                                 </ul>
                             </nav>
                         </div>

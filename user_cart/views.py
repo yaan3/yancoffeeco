@@ -627,9 +627,9 @@ def order_success(request, order_id):
         product_orders = ProductOrder.objects.filter(order=order)
 
         # Ensure order status is 'Completed' before proceeding
-        if order.status != 'Completed':
-            sweetify.toast(request, 'Payment not completed yet.', icon='error', timer=3000)
-            return redirect('store:home')
+        # if order.status != 'Completed':
+        #     sweetify.toast(request, 'Payment not completed yet.', icon='error', timer=3000)
+        #     return redirect('store:home')
 
         # Mark cart items as deleted (soft delete)
         CartItem.objects.filter(cart__user=request.user, is_deleted=False).update(is_deleted=True)

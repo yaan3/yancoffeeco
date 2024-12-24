@@ -169,7 +169,8 @@ from django.db.models import Q
 def product_detailed_view(request, product_pid):
     product = get_object_or_404(Product, p_id=product_pid)
     specifications = product.specifications or ""
-    specifications_lines = [line.strip() for line in specifications.split('\n') if line.strip()]  # Remove blank lines and trim spaces    product_images = ProductImages.objects.filter(product=product).order_by('images')
+    specifications_lines = [line.strip() for line in specifications.split('\n') if line.strip()]  # Remove blank lines and trim spaces    
+    # product_images = ProductImages.objects.filter(product=product).order_by('images')
     
     product_images = ProductImages.objects.filter(product=product).order_by('images')
 
@@ -381,11 +382,13 @@ def order_cancel(request, order_id):
                 amount=order.order_total,
                 reason='Order Cancellation'
             )
+
+            sweetify.toast(request, 'Your order has been cancelled and amount refunded to your wallet.',icon='success', timer=3000)
+        else:
+            sweetify.toast(request, 'Your order has been cancelled.',icon='success', timer=3000)
+        
         order.status = 'Cancelled'
         order.save()
-        sweetify.toast(request, 'Your order has been cancelled and amount refunded to your wallet.',icon='success', timer=3000)
-    else:
-        sweetify.toast(request, 'Your order is already cancelled.',icon='warning', timer=3000)
     return redirect('store:user_order_detail', order_id=order.id)
 
 

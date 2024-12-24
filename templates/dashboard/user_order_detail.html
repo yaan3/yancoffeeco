@@ -110,15 +110,14 @@
             <form action="{% url 'cart:razorpay_repayment' order.id %}" method="POST" style="display: inline;">
                 {% csrf_token %}
                 <input type="hidden" name="razorpay_order_id" value="{{ order.razorpay_order_id }}">
-<!-- Repay Button -->
-                <button id="rzp-repay-button" class="btn btn-primary">Repay</button>
-            </form>
+                <!-- Repay Button -->
+                <button id="rzp-repay-button" class="btn btn-primary" style="margin-left: 10px;">Repay</button>            </form>
             {% endif %}
             
     
             {% if order.status == 'Delivered' %}
             {% include 'dashboard/modal/return_reason.html' %}
-            {% elif order.status != 'Cancelled' and order.status != 'Return Approved' %}
+            {% elif order.status != 'Cancelled' and order.status != 'Return Approved' and order.status != 'Return Requested'%}
             <a href="{% url 'store:order_cancel' order.id %}" class="cancel-order-btn">Cancel Order</a>
             {% endif %}
         </div>
